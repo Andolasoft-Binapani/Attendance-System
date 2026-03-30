@@ -2,10 +2,12 @@ FROM python:3.11-slim
 RUN apt-get update && apt-get install -y --no-install-recommends \
     cmake build-essential libopenblas-dev liblapack-dev \
     libx11-dev libgtk-3-dev libboost-all-dev libssl-dev curl \
+    libgl1 libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY requirements.txt .
-RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
+RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt && \
+    python -c "import mediapipe as mp; mp.solutions.face_mesh.FaceMesh(static_image_mode=True).close()"
 COPY . .
 RUN mkdir -p uploads/employees uploads/snapshots
 EXPOSE 8000

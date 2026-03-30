@@ -21,6 +21,8 @@ class User(Base):
     role = Column(String(20), default="hr")
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    employee_id = Column(UUID(as_uuid=True), ForeignKey("employees.id", ondelete="SET NULL"), nullable=True)
+    employee = relationship("Employee", foreign_keys="[User.employee_id]")
 
 class Employee(Base):
     __tablename__ = "employees"
@@ -55,3 +57,17 @@ class Attendance(Base):
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
     updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
     employee = relationship("Employee", back_populates="attendances")
+
+class Setting(Base):
+    __tablename__ = "settings"
+    key = Column(String(50), primary_key=True)
+    value = Column(Text, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class Holiday(Base):
+    __tablename__ = "holidays"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    date = Column(Date, unique=True, nullable=False)
+    name = Column(String(100), nullable=False)
+    type = Column(String(20), default="public")
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)

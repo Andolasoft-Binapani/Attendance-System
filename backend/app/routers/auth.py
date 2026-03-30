@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,6 +17,10 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
 class Token(BaseModel):
     access_token: str; token_type: str; role: str; username: str
+    employee_db_id: Optional[str] = None
+
+class TokenData(BaseModel):
+    username: Optional[str] = None
 
 def create_token(data: dict) -> str:
     p = {**data, "exp": datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)}
@@ -43,8 +48,11 @@ async def login(form: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = 
     user = r.scalar_one_or_none()
     if not user or not pwd_ctx.verify(form.password, user.hashed_password):
         raise HTTPException(401, "Invalid username or password")
-    return Token(access_token=create_token({"sub": user.username, "role": user.role}),
-                 token_type="bearer", role=user.role, username=user.username)
+    emp_db_id = str(user.employee_id) if user.employee_id else None
+    return Token(
+        access_token=create_token({"sub": user.username, "role": user.role, "employee_db_id": emp_db_id}),
+        token_type="bearer", role=user.role, username=user.username, employee_db_id=emp_db_id,
+    )
 
 @router.get("/me")
 async def me(user: User = Depends(get_current_user)):

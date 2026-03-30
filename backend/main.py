@@ -7,7 +7,8 @@ from sqlalchemy import select
 from passlib.context import CryptContext
 from app.database import engine, Base, AsyncSessionLocal
 from app.models import User
-from app.routers import employees, attendance, recognition, auth, export
+from app.routers import employees, attendance, recognition, auth, export, employee_panel, kiosk, settings as settings_router, liveness
+from sqlalchemy import text
 
 DEFAULT_ADMIN_USERNAME = "admin"
 DEFAULT_ADMIN_EMAIL = "admin@company.com"
@@ -44,6 +45,10 @@ async def ensure_default_admin():
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        await conn.execute(text(
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS "
+            "employee_id UUID REFERENCES employees(id) ON DELETE SET NULL"
+        ))
     await ensure_default_admin()
     os.makedirs("uploads/employees", exist_ok=True)
     os.makedirs("uploads/snapshots", exist_ok=True)
@@ -59,6 +64,10 @@ app.include_router(employees.router,   prefix="/api/employees",   tags=["Employe
 app.include_router(recognition.router, prefix="/api/recognition", tags=["Recognition"])
 app.include_router(attendance.router,  prefix="/api/attendance",  tags=["Attendance"])
 app.include_router(export.router,      prefix="/api/export",      tags=["Export"])
+app.include_router(employee_panel.router, prefix="/api/employee", tags=["Employee Panel"])
+app.include_router(kiosk.router,          prefix="/api/kiosk",    tags=["Kiosk"])
+app.include_router(liveness.router,       prefix="/api/liveness", tags=["Liveness"])
+app.include_router(settings_router.router, prefix="/api/settings", tags=["Settings"])
 
 @app.get("/health")
 async def health():

@@ -9,8 +9,9 @@ export function AuthProvider({ children }) {
     fd.append('username', username); fd.append('password', password)
     const res = await api.post('/auth/login', fd, { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } })
     localStorage.setItem('token', res.data.access_token)
-    localStorage.setItem('user', JSON.stringify({ username: res.data.username, role: res.data.role }))
-    setToken(res.data.access_token); setUser({ username: res.data.username, role: res.data.role })
+    const u = { username: res.data.username, role: res.data.role, employee_db_id: res.data.employee_db_id ?? null }
+    localStorage.setItem('user', JSON.stringify(u))
+    setToken(res.data.access_token); setUser(u)
     return res.data
   }, [])
   const logout = useCallback(() => {

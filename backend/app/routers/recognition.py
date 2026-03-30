@@ -19,7 +19,7 @@ class FrameRequest(BaseModel):
 class RecognitionResult(BaseModel):
     recognized: bool; employee_id: Optional[str]=None; employee_db_id: Optional[str]=None
     name: Optional[str]=None; department: Optional[str]=None; designation: Optional[str]=None
-    image_path: Optional[str]=None; message: str
+    image_path: Optional[str]=None; snapshot_path: Optional[str]=None; message: str
 
 @router.post("/identify", response_model=RecognitionResult)
 async def identify(payload: FrameRequest, db: AsyncSession=Depends(get_db)):
@@ -40,4 +40,4 @@ async def identify(payload: FrameRequest, db: AsyncSession=Depends(get_db)):
     with open(snap,"wb") as f: f.write(buf.tobytes())
     return RecognitionResult(recognized=True, employee_id=emp.employee_id, employee_db_id=str(emp.id),
         name=emp.name, department=emp.department.name if emp.department else None,
-        designation=emp.designation, image_path=emp.image_path, message="Identified")
+        designation=emp.designation, image_path=emp.image_path, snapshot_path=snap, message="Identified")

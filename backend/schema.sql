@@ -12,7 +12,8 @@ CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     username VARCHAR(80) NOT NULL UNIQUE, email VARCHAR(255) NOT NULL UNIQUE,
     hashed_password TEXT NOT NULL, role VARCHAR(20) NOT NULL DEFAULT 'hr',
-    is_active BOOLEAN NOT NULL DEFAULT TRUE, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    is_active BOOLEAN NOT NULL DEFAULT TRUE, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    employee_id UUID
 );
 INSERT INTO users (username, email, hashed_password, role) VALUES (
   'admin','admin@company.com',
@@ -45,3 +46,6 @@ CREATE TABLE IF NOT EXISTS attendance (
 );
 CREATE INDEX IF NOT EXISTS idx_att_date ON attendance(date);
 CREATE INDEX IF NOT EXISTS idx_att_emp  ON attendance(employee_id);
+
+-- Link users to employees (idempotent)
+ALTER TABLE users ADD COLUMN IF NOT EXISTS employee_id UUID REFERENCES employees(id) ON DELETE SET NULL;
