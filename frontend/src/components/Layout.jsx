@@ -1,18 +1,12 @@
 import { useState, useRef, useEffect } from 'react'
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useNotifications } from '../context/NotificationsContext'
 
 const nav = [
-  { to:'/punch',      label:'Punch In/Out', d:'M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14M4 8a2 2 0 012-2h9a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2V8z' },
   { to:'/employees',  label:'Employees',    d:'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z' },
   { to:'/attendance', label:'Attendance',   d:'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' },
   { to:'/settings',  label:'Settings',     d:'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065zM15 12a3 3 0 11-6 0 3 3 0 016 0z' },
-]
-
-const NOTIFICATIONS = [
-  { id:1, title:'New employee registered', desc:'John Doe was added to Engineering.', time:'2 min ago', read:false },
-  { id:2, title:'Attendance exported',     desc:'March report CSV is ready to download.', time:'1 hr ago',  read:false },
-  { id:3, title:'Late punch-in detected',  desc:'Alice arrived 22 min late today.', time:'3 hr ago',  read:true  },
 ]
 
 function useClickOutside(ref, handler) {
@@ -26,8 +20,8 @@ function useClickOutside(ref, handler) {
 export default function Layout() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const { notifications, unread, markAllRead, markRead } = useNotifications()
   const [search, setSearch] = useState('')
-  const [notifications, setNotifications] = useState(NOTIFICATIONS)
   const [notifOpen, setNotifOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
 
@@ -35,11 +29,6 @@ export default function Layout() {
   const profileRef = useRef(null)
   useClickOutside(notifRef,   () => setNotifOpen(false))
   useClickOutside(profileRef, () => setProfileOpen(false))
-
-  const unread = notifications.filter(n => !n.read).length
-
-  const markAllRead = () => setNotifications(ns => ns.map(n => ({...n, read:true})))
-  const markRead = id => setNotifications(ns => ns.map(n => n.id === id ? {...n, read:true} : n))
 
   const handleLogout = () => { logout(); navigate('/login') }
 
@@ -97,7 +86,7 @@ export default function Layout() {
                   ))}
                 </ul>
                 <div className="border-t border-gray-100 px-4 py-2.5 text-center">
-                  <button className="text-xs text-indigo-600 hover:underline">View all notifications</button>
+                  <button onClick={() => { setNotifOpen(false); navigate('/notifications') }} className="text-xs text-indigo-600 hover:underline">View all notifications</button>
                 </div>
               </div>
             )}

@@ -71,3 +71,15 @@ class Holiday(Base):
     name = Column(String(100), nullable=False)
     type = Column(String(20), default="public")
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+class SpoofLog(Base):
+    __tablename__ = "spoof_logs"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    employee_db_id = Column(UUID(as_uuid=True), ForeignKey("employees.id", ondelete="SET NULL"), nullable=True)
+    reason = Column(String(50), nullable=False)        # static_image | no_face | challenge_fail | replay
+    confidence = Column(Numeric(5, 4), nullable=True)
+    challenge = Column(String(50), nullable=True)      # challenge that was active when spoof detected
+    ip_address = Column(String(50), nullable=True)
+    frame_count = Column(Integer, nullable=True)
+    timestamp = Column(DateTime(timezone=True), default=datetime.utcnow)
+    employee = relationship("Employee", foreign_keys=[employee_db_id])
